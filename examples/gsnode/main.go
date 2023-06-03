@@ -15,7 +15,8 @@ import (
 )
 
 // #cgo CXXFLAGS: -I.
-// #cgo LDFLAGS: -L../../build -L../../build/examples/gsnode -lstdc++ -lm -lgs -lllama
+// #cgo LDFLAGS: -L. -lstdc++ -lm -lgs
+// #cgo LDFLAGS: -lcublas -lcudart -L/usr/local/cuda/lib64/
 // #include "gs.h"
 import "C"
 
@@ -55,6 +56,7 @@ func wsConnectAndHandle(url string) {
 		return
 	}
 	defer c.Close()
+	log.Println("[ws] connected!")
 	go func() {
 		// Read from ws
 		for {
@@ -110,6 +112,8 @@ func wsLoop() {
 }
 
 func main() {
+	runtime.LockOSThread()
+	flag.Parse()
 	modelName = *flagModelPath
 	// Remove ".bin" suffix
 	modelName = strings.TrimSuffix(modelName, ".bin")
@@ -121,8 +125,6 @@ func main() {
 		modelName = modelName[strings.LastIndex(modelName, "\\")+1:]
 	}
 
-	runtime.LockOSThread()
-	flag.Parse()
 	C.gsInit(C.CString(*flagModelPath))
 	go wsLoop()
 
@@ -203,6 +205,7 @@ func (task *Task) AddBytes(bytes []byte) {
 
 func FinishTask(id uint32) {
 	log.Println("[gs] FinishTask: ", id)
+	C.gsCancelTask(C.uint(id))
 	task := currentTasks[id]
 	if task != nil {
 		task.Flush()

@@ -37,8 +37,8 @@ int gsInit(const char *modelPath)
     params.n_batch = 128;
 
 #ifdef GGML_USE_CUBLAS
-    params.n_threads = 1;
-    params.n_batch = 512;
+    params.n_threads = 8;
+    params.n_batch = 1024;
     params.n_gpu_layers = 1000;
     device = "cuda";
 #endif
@@ -161,6 +161,7 @@ int gsDoOnce()
         GsFinishCallback(currentTask.taskID);
         currentTask.taskState = TASK_STATE_INVALID;
         ctxDirty = true;
+        llama_print_timings(ctx);
         return 0;
     }
     auto tokenStr = llama_token_to_str(ctx, nextToken);

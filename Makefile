@@ -250,6 +250,9 @@ save-load-state: examples/save-load-state/save-load-state.cpp build-info.h ggml.
 server: examples/server/server.cpp examples/server/httplib.h examples/server/json.hpp build-info.h ggml.o llama.o common.o $(OBJS)
 	$(CXX) $(CXXFLAGS) -Iexamples/server $(filter-out %.h,$(filter-out %.hpp,$^)) -o $@ $(LDFLAGS)
 
+gs: examples/gsnode/gs.cpp  build-info.h ggml.o llama.o common.o $(OBJS)
+	$(CXX) $(CXXFLAGS) -Iexamples/gsnode $(filter-out %.h,$(filter-out %.hpp,$^)) -shared -o examples/gsnode/libgs.so $(LDFLAGS)
+
 build-info.h: $(wildcard .git/index) scripts/build-info.sh
 	@sh scripts/build-info.sh > $@.tmp
 	@if ! cmp -s $@.tmp $@; then \
